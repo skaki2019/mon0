@@ -44,19 +44,19 @@ void TransitionMatrix0::build_matrix() {
   prob_computed_ = true;
 }
 
-inline void TransitionMatrix::counts(uint64_t packed_path) {
+void TransitionMatrix::counts(uint64_t packed_path) {
   uint64_t key = packed_path & prefix_mask_;
   auto [it, inserted] = hash_matrix_.try_emplace(key, CountProb{});
   ++(it.value().count);
 }
 
-inline void TransitionMatrix::counts(uint64_t packed_path, size_t offset) {
+void TransitionMatrix::counts(uint64_t packed_path, size_t offset) {
   uint64_t key = (packed_path << 8*offset) & prefix_mask_;
   auto [it, inserted] = hash_matrix_.try_emplace(key, CountProb{});
   ++(it.value().count);
 }
 
-inline void TransitionMatrix::counts_path(uint64_t packed_path, size_t path_size) {
+void TransitionMatrix::counts_path(uint64_t packed_path, size_t path_size) {
   for (size_t j = 0; j < path_size-ord_; ++j) {
     counts(packed_path, j);
   }
@@ -131,7 +131,7 @@ void TransitionMatrix::build_matrix(size_t path_size) {
 
   packed_stack = pack_fstack(stack);
   for (size_t j = 0; j < stack.size()-ord_; ++j) {
-    counts(packed_stack, j);
+    counts(packed_stack, static_cast<size_t>(j));
   }
 
   BACKTRACK:

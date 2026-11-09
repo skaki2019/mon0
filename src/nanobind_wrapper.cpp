@@ -83,7 +83,7 @@ NB_MODULE(_impl, m) {
       .def("compute_transition_probability",
            &TransitionMatrix::compute_transition_probability, nb::arg("ord"))
       .def("save_tmat_binary", &TransitionMatrix::save_tmat_binary, nb::arg("path"))
-      .def_static("load_tmat_binary", &TransitionMatrix::load_tmat_binary,
+      .def("load_tmat_binary", &TransitionMatrix::load_tmat_binary,
                   nb::arg("path"));
 
   nb::class_<MultiOrderNetwork>(

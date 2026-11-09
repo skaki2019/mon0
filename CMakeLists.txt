@@ -24,7 +24,7 @@ find_package(Eigen3 REQUIRED NO_MODULE)
 
 # --- tsl-robin-map (header-only, may lack CMake config in conda) ---
 find_package(tsl_robin_map CONFIG QUIET)
-if(NOT robin_map_FOUND)
+if(NOT tsl_robin_map_FOUND)
     # Try conda's include directory directly
     if(DEFINED ENV{CONDA_PREFIX} AND EXISTS "$ENV{CONDA_PREFIX}/include/tsl/robin_map.h")
         message(STATUS "Using tsl-robin-map from conda: $ENV{CONDA_PREFIX}/include")
@@ -50,21 +50,22 @@ endif()
 nanobind_add_module(
   _impl          # Name of the module
   # STABLE_ABI          # Uncomment to build Stable ABI wheels for Python 3.12+
-  src/crs_dataset.hpp       # Source file
+  src/nanobind_wrapper.cpp
+  # src/crs_dataset.hpp       # Source file
   src/crs_dataset.cpp
-  src/transition_matrix.hpp
+  # src/transition_matrix.hpp
   src/transition_matrix.cpp
-  src/multi_order_network.hpp
+  # src/multi_order_network.hpp
   src/multi_order_network.cpp
-  src/utilities.hpp
+  # src/utilities.hpp
   src/utilities.cpp
 )
 
 # 5. Link dependencies
-target_link_libraries(_impl PRIVATE 
-    Eigen3::Eigen
-)
-
+# target_link_libraries(_impl PRIVATE 
+#     Eigen3::Eigen
+# )
+target_link_libraries(_impl PRIVATE Eigen3::Eigen tsl::robin_map)
 # Install the compiled library into the Python package directory
 # install(TARGETS _impl LIBRARY DESTINATION ${SKBUILD_PROJECT_NAME})
 
@@ -72,4 +73,4 @@ target_link_libraries(_impl PRIVATE
 install(TARGETS _impl LIBRARY DESTINATION mon0)
 
 # Copy Python files - add this to your CMakeLists.txt
-install(DIRECTORY src/mon0/ DESTINATION mon0)
+# install(DIRECTORY src/mon0/ DESTINATION mon0)

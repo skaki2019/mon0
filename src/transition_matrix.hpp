@@ -7,6 +7,7 @@
 
 #include <tsl/robin_map.h>
 #include <Eigen/SparseCore>
+#include <Eigen/Sparse>
 
 #include <algorithm>
 #include <cmath>
@@ -77,11 +78,11 @@ public:
     hnode_mask_ = ~static_cast<uint64_t>(0) << 8 * (8 - ord_);
   }
 
-  inline void counts(uint64_t packed_path);
-  inline void counts(uint64_t packed_path, size_t offset);
-  inline void counts_path(uint64_t, size_t);
-  inline double log_probability(uint64_t hnode) const;
-  inline double log_probability(uint64_t hnode, size_t offset) const;
+  void counts(uint64_t packed_path);
+  void counts(uint64_t packed_path, size_t offset);
+  void counts_path(uint64_t, size_t);
+  double log_probability(uint64_t hnode) const;
+  double log_probability(uint64_t hnode, size_t offset) const;
 
   void build_matrix(size_t);
   double compute_transition_probability(size_t);

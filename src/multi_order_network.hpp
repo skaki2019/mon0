@@ -71,20 +71,20 @@ public:
     void compute_probability();
 
     double compute_loglikelihood(size_t, size_t);
-    double compute_bayesian(size_t);
+    // double compute_bayesian(size_t);
     // ------------------------------------------------------------------------
     // Interfaces (declarations only — implementations to be provided later)
     // ------------------------------------------------------------------------
 
     // Log-likelihood of an observed path under the k-th order model.
     // `path` is a sequence of node indices.
-    double log_likelihood(int order,
-                          const std::vector<int>& path) const;
+    // double log_likelihood(int order,
+    //                       const std::vector<int>& path) const;
 
     // Bayesian score (e.g., marginal likelihood / model evidence) for the
     // k-th order model given the observed path.
-    double bayesian_score(int order,
-                          const std::vector<int>& path) const;
+    // double bayesian_score(int order,
+    //                       const std::vector<int>& path) const;
 
     // Number of free parameters (degrees of freedom) of the k-th order model.
     void degrees_of_freedom(int order);
@@ -94,18 +94,18 @@ public:
     // ------------------------------------------------------------------------
 
     // Compute an information criterion (e.g., AIC, BIC) for order selection.
-    double information_criterion(int order,
-                                 const std::vector<int>& path,
-                                 const std::string& criterion) const;
+    // double information_criterion(int order,
+    //                              const std::vector<int>& path,
+    //                              const std::string& criterion) const;
 
     // Select the optimal Markov order given the observed path and a criterion.
-    int optimal_order(const std::vector<int>& path,
-                      const std::string& criterion) const;
+    // int optimal_order(const std::vector<int>& path,
+    //                   const std::string& criterion) const;
 
     // Likelihood ratio test between two nested orders.
-    double likelihood_ratio_test(int order_null,
-                                 int order_alt,
-                                 const std::vector<int>& path) const;
+    // double likelihood_ratio_test(int order_null,
+    //                              int order_alt,
+    //                              const std::vector<int>& path) const;
 
 
     nb::ref<CSRDataset> dataset_;

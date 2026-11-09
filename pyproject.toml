@@ -18,7 +18,7 @@ build-dir = "build/{wheel_tag}"
 sdist.exclude = [".github"]
 
 [tool.scikit-build.wheel]
-packages = ["mon0"]
+packages = ["src/mon0"]
 
 # [tool.scikit-build.wheel.exclude]
 # patterns = ["__pycache__", "*.pyc", "*.pyo", "*.pyd"]

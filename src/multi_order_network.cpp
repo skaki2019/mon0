@@ -69,7 +69,7 @@ void MultiOrderNetwork::build_matrix(size_t path_size) {
     packed_stack = pack_fstack(stack);
     // ++nodes_counts_[stack[0].u];
     for (size_t j = 0; j < max_order_; ++j) {
-      matrices_[j]->counts_path(packed_stack, stack.size());
+      matrices_[j]->counts_path(packed_stack, static_cast<size_t>(stack.size()));
     }
 
   BACKTRACK:
@@ -161,7 +161,7 @@ double MultiOrderNetwork::compute_loglikelihood(size_t path_size, size_t ord) {
     log_likelihood += matrices_[j]->log_probability(packed_stack);
   }
   for (size_t j = 1; j < path_size-ord; ++j) {
-    log_likelihood += matrices_[ord-1]->log_probability(packed_stack, j);
+    log_likelihood += matrices_[ord-1]->log_probability(packed_stack, static_cast<size_t>(j));
   }
 
   BACKTRACK:
@@ -211,7 +211,7 @@ void MultiOrderNetwork::degrees_of_freedom(int order) {
     dof[k] = dof1 - static_cast<double>(nnz_row);
 
     if (k != order) {
-      Ak *= dataset_->A_csr;
+      Ak = Ak * dataset_->A_csr;
     }
   }
   
