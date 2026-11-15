@@ -27,6 +27,7 @@ namespace nb = nanobind;
 void MultiOrderNetwork::build_matrix(size_t path_size) {
   //   size_t path_size = static_cast<size_t>(ord_ + 1);
 
+  size_t counter = 0;
   std::vector<Frame> stack;
   stack.reserve(path_size);
   std::vector<std::pair<int, int>> path;
@@ -65,7 +66,11 @@ void MultiOrderNetwork::build_matrix(size_t path_size) {
         }
       }
     }
-
+    if (counter % 100'000 == 1) {
+      std::cout << counter << std::endl;
+    }
+    ++counter;
+    
     packed_stack = pack_fstack(stack);
     // ++nodes_counts_[stack[0].u];
     ++(matrix0_->nodes_counts_[stack[0].u]);
