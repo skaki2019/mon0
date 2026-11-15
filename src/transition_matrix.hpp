@@ -67,6 +67,11 @@ public:
     n_nodes_ = dataset_->n_nodes_;
     transition_mask_ = ~static_cast<uint64_t>(0) << 8 * (7 - ord_);
     hnode_mask_ = ~static_cast<uint64_t>(0) << 8 * (8 - ord_);
+    size_t res0 = n_nodes_;
+    for (size_t i=0; i<ord_; ++i) {
+      res0 *= n_nodes_ / 4;
+    }
+    hash_matrix_.reserve(res0);
   }
 
   inline uint64_t node_src(uint64_t hnode) const {
