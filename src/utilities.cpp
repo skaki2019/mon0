@@ -16,13 +16,28 @@ std::vector<int> unpack_vector(uint64_t packed, size_t original_size) {
     return result;
 }
 
-
+std::vector<int> to_vector(const std::vector<Frame>& vf) {
+    std::vector<int> v;
+    for (auto& e: vf) {
+        v.push_back(e.u);
+    }
+    return v;
+}
 void print_packed_be(uint64_t packed) {
     for (size_t i = 0; i < 8; ++i) {
         std::cout << static_cast<int>((packed >> ((7 - i) * 8)) & 0xFF) << ",";
     }
     std::cout << std::endl;
 
+}
+
+uint64_t pack_fstack(const std::vector<Frame>& v) {
+    uint64_t packed = 0;
+    const size_t n = v.size();
+    for (size_t i = 0; i < n; ++i) {
+        packed |= (static_cast<uint64_t>(v[i].u) & 0xFF) << ((7- i) * 8);
+    }
+    return packed;
 }
 
 std::vector<int> countRange(const std::vector<int>& vec,

@@ -3,3 +3,5 @@
 build
 *.ipynb
 **/.DS_Store
+*/*.py[cod]
+**/__pycache__

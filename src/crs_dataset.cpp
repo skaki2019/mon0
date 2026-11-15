@@ -1,4 +1,6 @@
 #include "crs_dataset.hpp"
+#include "utilities.hpp"
+
 // ============================================================================
 // CSR Dataset class
 // ============================================================================
@@ -44,6 +46,77 @@ nb::tuple CSRDataset::to_python_lists() const {
                         ub_);
 }
 
+std::vector<std::vector<int>> CSRDataset::generate_paths(size_t path_size, size_t num_paths) {
+  if (path_size >= 8) {
+    path_size = 8;
+  }
+  std::vector<Frame> stack;
+  stack.reserve(path_size);
+  std::vector<std::pair<int, int>> path;
+  path.reserve(path_size);
+
+  int u, v, t;
+  size_t idx0, idx1, idx;
+  std::vector<int>::iterator it0, it1, it;
+  const size_t PSTACKLISTSIZE = 1024;
+  int ic = 0;
+  uint64_t packed_stack;
+
+  std::vector<std::vector<int>> path_lst;
+  size_t path_count = 0;
+
+  for (size_t k = 0; k < n_edges_; ++k) {
+    stack.clear();
+    u = src_[k];
+    v = dst_[k];
+    t = T_[k];
+    stack.push_back({u, t, k + 1, k});
+
+  DOWN:
+    while (stack.size() < path_size) { // the depth is less than path_size
+      Frame &f = stack.back();
+      if (f.idx >= f.idx1) { // current node has no more child
+        // goto BACKTRACK;
+        break;
+      } else { // Otherwise, go one step deeper
+        v = dst_[f.idx];
+        auto lb_idx = lb_[f.idx];
+        auto ub_idx = ub_[f.idx];
+        if (lb_idx >= ub_idx) { // v is a leaf
+          stack.push_back({v, f.t + 1, static_cast<size_t>(ub_idx),
+                           static_cast<size_t>(lb_idx)});
+        } else {
+          stack.push_back({v, T_[lb_idx], static_cast<size_t>(ub_idx),
+                           static_cast<size_t>(lb_idx)});
+        }
+      }
+    }
+
+  ++path_count;
+  if (path_count <= num_paths) {
+    // packed_stack = pack_fstack(stack);
+    // path_lst.push_back(unpack_vector(packed_stack, stack.size()));
+    path_lst.emplace_back(to_vector(stack));
+  } else {
+    break;
+  }
+  
+  
+
+  BACKTRACK:
+    stack.pop_back();
+    while (stack.size() > 0) {
+      Frame &f = stack.back();
+      if (++f.idx < f.idx1) { // Next node available
+        goto DOWN;
+      } else {
+        stack.pop_back();
+      }
+    }
+  }
+  
+  return path_lst;
+}
 // ========================================================================
 // Binary I/O
 // ========================================================================

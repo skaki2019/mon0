@@ -21,16 +21,6 @@
 #include <vector>
 
 
-struct Frame {
-  int u;
-  int t;
-  size_t idx1;
-  size_t idx;
-};
-
-uint64_t pack_fstack_le(const std::vector<Frame> &v);
-uint64_t pack_fstack(const std::vector<Frame> &v);
-
 struct CountProb {
   uint64_t count;
   double prob;
@@ -74,8 +64,17 @@ public:
   TransitionMatrix(nb::ref<CSRDataset> dataset, const int ord)
       : dataset_(dataset), ord_(ord), counted_(false), prob_computed_(false),
       bayesian_sc_(0.0) {
-    prefix_mask_ = ~static_cast<uint64_t>(0) << 8 * (7 - ord_);
+    n_nodes_ = dataset_->n_nodes_;
+    transition_mask_ = ~static_cast<uint64_t>(0) << 8 * (7 - ord_);
     hnode_mask_ = ~static_cast<uint64_t>(0) << 8 * (8 - ord_);
+  }
+
+  inline uint64_t node_src(uint64_t hnode) const {
+    return hnode_mask_ & hnode;
+  }
+
+  inline uint64_t node_dst(uint64_t hnode) const {
+    return (transition_mask_ & hnode) << 8;
   }
 
   void counts(uint64_t packed_path);
@@ -100,11 +99,38 @@ public:
   std::vector<std::pair<std::vector<int>, double>>
   get_transition_probs(const tsl::robin_map<uint64_t, CountProb> &table, size_t key_len);
 
-private:
+
   nb::ref<CSRDataset> dataset_;
   int ord_;
+  int n_nodes_;
   tsl::robin_map<uint64_t, CountProb> hash_matrix_;
-  uint64_t prefix_mask_, hnode_mask_;
+  uint64_t transition_mask_, hnode_mask_;
   bool counted_, prob_computed_;
   double bayesian_sc_;
+};
+
+
+struct TransitionGraph : public nb::intrusive_base {
+  TransitionGraph(size_t ord) : ord_(ord) {
+    transition_mask_ = ~static_cast<uint64_t>(0) << 8 * (7 - ord_);
+    hnode_mask_ = ~static_cast<uint64_t>(0) << 8 * (8 - ord_);
+  }
+  void build_graph(nb::ref<TransitionMatrix> tm);
+
+  inline uint64_t node_src(uint64_t hnode) const {
+    return hnode_mask_ & hnode;
+  }
+
+  inline uint64_t node_dst(uint64_t hnode) const {
+    return (transition_mask_ & hnode) << 8;
+  }
+  size_t ord_;
+  std::vector<uint32_t> nptr;
+  std::vector<uint64_t> nodes;   // sorted, includes sink nodes
+  std::vector<uint32_t> offset;  // nodes.size() + 1
+  std::vector<uint32_t> dst_idx; // E
+  std::vector<float> prob;       // E  (or uint32 counts + per-node totals)
+  std::vector<uint64_t> counts;
+
+  uint64_t transition_mask_, hnode_mask_;
 };

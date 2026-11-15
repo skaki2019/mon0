@@ -69,6 +69,10 @@ public:
 
     void build_matrix(size_t path_size);
     void compute_probability();
+    void build_matrix_uptoK(size_t k, size_t path_size);
+    void matrix_clear(size_t k);
+    void matrix_clear_uptoK(size_t k);
+    void matrix_show_stats(size_t k);
 
     double compute_loglikelihood(size_t, size_t);
     // double compute_bayesian(size_t);

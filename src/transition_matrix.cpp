@@ -6,21 +6,52 @@ struct Entry {
   CountProb *val_ptr; // Pointer to value in the hash map
 };
 
-uint64_t pack_fstack_le(const std::vector<Frame>& v) {
-    uint64_t packed = 0;
-    for (size_t i = 0; i < v.size(); ++i) {
-        packed |= (static_cast<uint64_t>(v[i].u) & 0xFF) << (i * 8);
-    }
-    return packed;
-}
 
-uint64_t pack_fstack(const std::vector<Frame>& v) {
-    uint64_t packed = 0;
-    const size_t n = v.size();
-    for (size_t i = 0; i < n; ++i) {
-        packed |= (static_cast<uint64_t>(v[i].u) & 0xFF) << ((7- i) * 8);
+void TransitionGraph::build_graph(nb::ref<TransitionMatrix> tm) {
+  size_t N = tm->hash_matrix_.size();
+  size_t n = N * 0.25;
+  size_t num_nodes = tm->n_nodes_;
+  nptr.reserve(tm->n_nodes_+1);
+  nodes.reserve(n);
+  dst_idx.reserve(N);
+  std::vector<uint64_t> edges(N);
+  for (auto& kv: tm->hash_matrix_) {
+    edges.emplace_back(kv.first);
+  }
+  std::sort(edges.begin(), edges.end());
+  for (auto& e: edges) {
+    nodes.emplace_back(node_src(e));
+    nodes.emplace_back(node_dst(e));
+  }
+  std::sort(nodes.begin(), nodes.end());
+  nodes.erase(std::unique(nodes.begin(), nodes.end()), nodes.end());
+  
+  size_t n_hnodes = nodes.size();
+  size_t p = 0;
+  for (size_t i=0; i<num_nodes; ++i) {
+    nptr[i] = uint32_t(p);
+    while (p < n_hnodes && size_t(nodes[p]>>56) == i) {
+      ++p;
     }
-    return packed;
+  }
+  nptr[num_nodes] = p;
+  
+  size_t n_edges = edges.size();
+  offset.resize(n_hnodes+1);
+  size_t e = 0;
+  for (size_t i=0; i < n_hnodes; ++i) {
+    offset[i] = uint32_t(e);
+    while (e < n_edges && node_src(edges[e]) == nodes[i]) {
+      ++e;
+    }
+  }
+  offset[n_hnodes] = uint32_t(e);
+
+  dst_idx.resize(n_edges);
+  for (size_t j=0; j<n_edges; ++j) {
+    auto it = std::lower_bound(nodes.begin(), nodes.end(), node_dst(edges[j]));
+    dst_idx[j] = uint32_t(it-nodes.begin());
+  }
 }
 
 
@@ -45,13 +76,13 @@ void TransitionMatrix0::build_matrix() {
 }
 
 void TransitionMatrix::counts(uint64_t packed_path) {
-  uint64_t key = packed_path & prefix_mask_;
+  uint64_t key = packed_path & transition_mask_;
   auto [it, inserted] = hash_matrix_.try_emplace(key, CountProb{});
   ++(it.value().count);
 }
 
 void TransitionMatrix::counts(uint64_t packed_path, size_t offset) {
-  uint64_t key = (packed_path << 8*offset) & prefix_mask_;
+  uint64_t key = (packed_path << 8*offset) & transition_mask_;
   auto [it, inserted] = hash_matrix_.try_emplace(key, CountProb{});
   ++(it.value().count);
 }
@@ -63,7 +94,7 @@ void TransitionMatrix::counts_path(uint64_t packed_path, size_t path_size) {
 }
 
 double TransitionMatrix::log_probability(uint64_t packed_path) const{
-  uint64_t key = packed_path & prefix_mask_;
+  uint64_t key = packed_path & transition_mask_;
   auto it = hash_matrix_.find(key);
   if (it != hash_matrix_.end()) {
     return it->second.prob;
@@ -74,7 +105,7 @@ double TransitionMatrix::log_probability(uint64_t packed_path) const{
 }
 
 double TransitionMatrix::log_probability(uint64_t packed_path, size_t offset) const{
-  uint64_t key = (packed_path << 8*offset) & prefix_mask_;
+  uint64_t key = (packed_path << 8*offset) & transition_mask_;
   auto it = hash_matrix_.find(key);
   if (it != hash_matrix_.end()) {
     return it->second.prob;

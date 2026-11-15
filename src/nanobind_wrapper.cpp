@@ -56,6 +56,7 @@ NB_MODULE(_impl, m) {
       // Debug: return to Python
       .def("to_python_lists", &CSRDataset::to_python_lists,
            "Return (row_ptr, col_idx, edge_data) as Python lists")
+      .def("generate_paths", &CSRDataset::generate_paths)
       // Binary I/O
       .def("save_binary", &CSRDataset::save_binary, nb::arg("path"),
            "Save dataset to binary file")

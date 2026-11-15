@@ -52,6 +52,7 @@ public:
   std::vector<int> T_;
   std::vector<int> lb_, ub_;
   void build_csr(std::vector<Edge> &&edges);
+  std::vector<std::vector<int>> generate_paths(size_t, size_t);
 
   SparseMatrixCSR A_csr;
 };
