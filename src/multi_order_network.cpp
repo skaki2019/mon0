@@ -68,6 +68,7 @@ void MultiOrderNetwork::build_matrix(size_t path_size) {
 
     packed_stack = pack_fstack(stack);
     // ++nodes_counts_[stack[0].u];
+    ++(matrix0_->nodes_counts_[stack[0].u]);
     for (size_t j = 0; j < max_order_; ++j) {
       matrices_[j]->counts_path(packed_stack, static_cast<size_t>(stack.size()));
     }
